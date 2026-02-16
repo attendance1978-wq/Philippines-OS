@@ -1,0 +1,244 @@
+📓 Philippines OS Project Jurnal
+1. Project Overview
+
+Project Name: Philippines OS
+Platform: Arduino / ESP32
+Goal: To create a lightweight operating system for Arduino devices that runs from flash memory, includes SD card module support, and is secured with an account-bound activation system.
+
+Key Features:
+
+OS runs permanently on flash → offline operation after activation
+
+Trial key arduinophicore valid for 5 months
+
+Activation tied to single Arduino account
+
+EEPROM stores activation status, device ID, trial timestamp
+
+Optional server services: firmware updates, OS module downloads
+
+SD card support for optional OS modules
+
+Target Users:
+
+Philippine teenage makers and tech enthusiasts
+
+Users interested in learning about microcontroller-based operating systems
+
+2. Hardware Requirements
+Component	Purpose
+ESP32 / Arduino	Runs core OS firmware
+SD Card	Optional OS modules or firmware storage
+EEPROM	Stores activation info, trial timestamp, and product key
+Wi-Fi Module	Required for first-time activation / server registration
+LED / Serial	Visual feedback and status logging
+3. Software Architecture
+3.1 Components
+Component	Function
+Core OS	Runs on device flash; basic OS functions and optional SD modules
+Activation Module	Handles trial key validation, server registration, and account binding
+Trial System	Default key arduinophicore valid for 5 months
+EEPROM Manager	Stores activation status, device ID, account ID, and trial timestamp
+Backend Server	Node.js server managing product key verification and account registration
+Optional Update Module	Downloads firmware updates or additional OS modules if server is online
+3.2 Activation & Account Binding Flow
+
+Step-by-step Process:
+
+Device first boot → check EEPROM for activation flag
+
+If not activated:
+
+Prompt user for Wi-Fi credentials
+
+Prompt user for Arduino Account ID
+
+Prompt user for Trial/Product Key
+
+Device sends JSON request to Arduino Account Server:
+
+{
+  "accountID": "user123",
+  "deviceID": "AA:BB:CC:DD:EE:FF",
+  "key": "arduinophicore"
+}
+
+
+Server validates request:
+
+Unused key → registers device to account, returns OK
+
+Key already used on another account → returns DUPLICATE
+
+EEPROM stores activation info → device runs offline core OS
+
+Optional: device can connect later for updates or OS modules
+
+Diagram:
+
+[Device Boot] 
+    │
+    ├─> Check EEPROM: Activated?
+    │      │
+    │      └─> Yes → Run OS
+    │
+    └─> No → Ask Wi-Fi + Account + Key
+           │
+           └─> Connect to Server → Verify Key & Account
+                   │
+                   ├─> OK → Store info in EEPROM → Run OS
+                   └─> DUPLICATE → Lock device, request new key
+
+4. Trial Key System
+
+Default key: arduinophicore
+
+Trial duration: 5 months (~150 days)
+
+Trial timestamp stored in EEPROM
+
+Each device can only use trial key once
+
+After trial expires → device locks, requires new product key
+
+Benefits:
+
+Prevents key sharing
+
+Encourages users to create an account and purchase a full product key
+
+Enables safe educational trial
+
+5. Backend Server (Arduino Account Server)
+
+Technology: Node.js / Express
+Database: JSON file or MongoDB
+
+Functions:
+
+Register a device to an Arduino account
+
+Validate trial/product key
+
+Prevent key duplication across accounts
+
+Store accountID, deviceID, key, activation timestamp
+
+Example record structure:
+
+{
+  "accountID": "user123",
+  "deviceID": "AA:BB:CC:DD:EE:FF",
+  "key": "arduinophicore",
+  "activationDate": 1676505600
+}
+
+
+Security Features:
+
+Device ID + account binding prevents unauthorized key sharing
+
+EEPROM ensures activation persists even offline
+
+Optional updates module provides server-controlled firmware or OS module updates
+
+6. ESP32 Firmware Modules
+
+Wi-Fi Manager – connects ESP32 to user-provided network
+
+Activation Module – validates trial/product key with server
+
+EEPROM Manager – stores device activation info, trial timestamp, and account binding
+
+Core OS – runs basic functions (LED blink, serial output, optional SD card modules)
+
+Optional Update Manager – fetches OS updates or extra modules from server
+
+7. User Instructions / Manual
+
+Step 1: Hardware Setup
+
+Insert SD card (optional) with philippines_os.bin
+
+Connect ESP32/Arduino to power
+
+Step 2: First Boot Activation
+
+Device prompts for Wi-Fi
+
+Enter Arduino Account ID
+
+Enter Trial/Product Key (arduinophicore for trial)
+
+Device connects to Arduino Account Server
+
+Server validates key:
+
+Key valid → device activated
+
+Key already used → device locks
+
+Step 3: Using the OS
+
+LED and serial output indicate OS is running
+
+Optional SD card modules can be loaded
+
+OS runs offline after activation
+
+Step 4: Trial Expiration
+
+After 5 months, trial key expires
+
+User must enter new product key for continued use
+
+8. Security & Anti-Piracy
+
+Account-bound activation → each device tied to one Arduino account
+
+EEPROM storage → prevents easy key reuse or bypass
+
+Server verification → ensures trial/product keys aren’t shared
+
+Trial system → encourages account creation and purchasing full key
+
+9. Future Enhancements
+
+Add graphical user interface for OS
+
+Multi-device account support with license management
+
+Encrypted keys and secure OTA updates
+
+Expanded SD card OS modules
+
+10. GitHub Repository Structure
+Philippines-OS/
+├── README.md                # This full jurnal + instructions
+├── ArduinoOS/               # ESP32 firmware
+│   ├── PhilippinesOS.ino
+│   ├── EEPROM.h
+│   ├── WiFiManager.h
+│   └── libraries/
+├── Server/                  # Backend server
+│   ├── server.js
+│   ├── package.json
+│   └── accounts.json
+├── SD_Card/                 # Optional OS modules
+│   └── philippines_os.bin
+└── Docs/
+    ├── INSTRUCTION.md
+    └── TRIAL_KEY.txt
+
+
+✅ Summary
+
+Philippines OS is a secure, trial-enabled OS for Arduino devices
+
+Tied to a single Arduino account
+
+Includes EEPROM storage, trial key system, server activation, SD card OS modules
+
+Fully offline once activated
+
+Designed for Philippine teenage users / tech enthusiasts
