@@ -1,0 +1,4 @@
+{
+  "PH-OS-TRIAL-123": { "owner": "Trial User", "expires": "2026-12-31" },
+  "PH-OS-PREMIUM-999": { "owner": "Juan Dela Cruz", "expires": "never" }
+}
